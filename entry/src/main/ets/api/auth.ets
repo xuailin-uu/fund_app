@@ -1,5 +1,5 @@
 import { http } from "@kit.NetworkKit";
-import { RegisterResponse } from "../model/User";
+import { RegisterResponse, LoginResponse } from "../model/User";
 import { ResponseData } from "../model/request";
 
 const BASE_URL = 'http://192.168.74.214:8000'
@@ -55,6 +55,54 @@ export class AuthRequest{
       responseData={
         message: '注册请求失败：' + (error as Error).message,
         success:false
+      }
+    }
+
+    return responseData;
+  }
+
+  async LoginRequest(username:string, password:string):Promise<LoginResponse>{
+    let responseData:LoginResponse = {
+      message: '',
+      success: false
+    }
+
+    try {
+      const response = await this.httpRequest.request(
+        LOGIN_URL,
+        {
+          method: http.RequestMethod.POST,
+          extraData: JSON.stringify({
+            'username':username,
+            'password':password
+          }),
+          header: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+        }
+      )
+
+      let result = JSON.parse(response.result as string)
+      console.log('获取登录数据成功：', JSON.stringify(result))
+
+      if (result.success) {
+        console.log("登录成功")
+        responseData = {
+          message: result.message,
+          success: true,
+          data: result.data
+        }
+      } else {
+        responseData = {
+          message: result.message || '登录失败',
+          success: false
+        }
+      }
+    } catch (error) {
+      console.log('登录请求错误：' + (error as Error).message);
+      responseData = {
+        message: '登录请求失败：' + (error as Error).message,
+        success: false
       }
     }
 

@@ -1,8 +1,5 @@
-// import router from '@ohos.router';
-
 import { promptAction, router } from '@kit.ArkUI';
-import { common } from '@kit.AbilityKit';
-import { User } from '../../model/User';
+import { AuthRequest } from '../../api/auth';
 
 @Extend(TextInput)
 function inputStyle(){
@@ -18,10 +15,12 @@ function inputStyle(){
 struct LoginPage {
   @Local username:string = '';
   @Local password: string = '';
-  // @Local message: string = '';
-  // @Local tableName:string="USER_TABLE_1"
-  // @Local column:Array<string>=["id","username","password","gender","birthday","address","register_date"]
   @Local isChecked:boolean=false;
+  private authRequest: AuthRequest = new AuthRequest();
+
+  aboutToDisappear() {
+    this.authRequest.destroyHttpRequest();
+  }
 
   build() {
     Column({space:10}) {
@@ -57,34 +56,46 @@ struct LoginPage {
                 "message": "用户名和密码不能为空",
                 "buttons": [{ text: "确定", color: "black" }]
               })
+              return;
             }
-            else {
-              const success = true
-              if (success) {
-                if (this.isChecked){
 
-                  router.replaceUrl({url:"pages/Index",params: { username: this.username }})
-                }
-                else {
-                  promptAction.showDialog({
-                    "title": "提示",
-                    "message": "是否同意《服务条款》、《注册协议》、《用户隐私协议》",
-                    "buttons": [{ text: "取消", color: "black" }, { text: "确定", color: "black" }] })
-                    .then(async (result)=>{
-                      if(result.index==1){
-                        this.isChecked = true;
-                        router.replaceUrl({url:"pages/Index",
-                          params: { username: this.username }})
-                      }})
-                }
-              }
-              else {
+            if (!this.isChecked) {
+              promptAction.showDialog({
+                "title": "提示",
+                "message": "请先同意《服务条款》、《注册协议》、《用户隐私协议》",
+                "buttons": [{ text: "确定", color: "black" }]
+              })
+              return;
+            }
+
+            try {
+              const response = await this.authRequest.LoginRequest(this.username, this.password);
+
+              if (response.success) {
+                promptAction.showToast({
+                  message: response.message || "登录成功",
+                  duration: 2000
+                })
+                router.replaceUrl({
+                  url:"pages/Index",
+                  params: {
+                    username: this.username,
+                    userData: response.data
+                  }
+                })
+              } else {
                 promptAction.showDialog({
                   "title": "登录提示",
-                  "message": "用户名或密码错误",
+                  "message": response.message || "用户名或密码错误",
                   "buttons": [{ text: "确定", color: "black" }]
                 })
               }
+            } catch (error) {
+              promptAction.showDialog({
+                "title": "登录提示",
+                "message": "登录请求失败，请检查网络连接",
+                "buttons": [{ text: "确定", color: "black" }]
+              })
             }
           })
         Button('注册')

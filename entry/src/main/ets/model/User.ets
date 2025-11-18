@@ -24,6 +24,13 @@ export interface RegisterResponse{
   success: boolean
 }
 
+//登录接口响应
+export interface LoginResponse{
+  message: string
+  success: boolean
+  data?: UserInfo
+}
+
 //接口
 
 //注册接口响应
