@@ -1,6 +1,6 @@
 import { http } from "@kit.NetworkKit";
 import { RegisterResponse, LoginResponse } from "../model/User";
-import { ResponseData } from "../model/request";
+import { ResponseData, LoginResponseData } from "../model/request";
 
 const BASE_URL = 'http://192.168.74.214:8000'
 const REGISTER_URL = BASE_URL + '/api/auth/register';
@@ -82,7 +82,7 @@ export class AuthRequest{
         }
       )
 
-      let result = JSON.parse(response.result as string)
+      let result: LoginResponseData = JSON.parse(response.result as string)
       console.log('获取登录数据成功：', JSON.stringify(result))
 
       if (result.success) {

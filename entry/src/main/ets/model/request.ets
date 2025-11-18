@@ -1,3 +1,5 @@
+import { UserInfo } from "./User";
+
 export interface ResponseData {
   message: string;
   code: string
@@ -5,6 +7,12 @@ export interface ResponseData {
 }
 
 export interface Value {
+}
+
+export interface LoginResponseData {
+  success: boolean;
+  message: string;
+  data?: UserInfo
 }
 
 export class Header {
